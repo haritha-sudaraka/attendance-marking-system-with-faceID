@@ -5,12 +5,6 @@ import os
 try:
     workingDir = os.getcwd()
     workingDir = format(workingDir)
-    # mainPath = workingDir.split('\\')
-    # workingDir = ''
-    #
-    # for x in range(len(mainPath)-5):
-    #     workingDir = workingDir+mainPath[x]+'\\'
-
     workingDir += '\\bridge.txt'
 
     with open(workingDir, 'r+') as f:
