@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Reflection;
 using System.Diagnostics;
-using System.Threading;
 
 namespace Mark_Attendance_UI
 {
@@ -89,7 +88,7 @@ namespace Mark_Attendance_UI
                 if (picBoxPreview.Image != null)
                 {
                     PathHelp imPath = new PathHelp();
-                    imPath.sendPath(lblImageLocation.Text);
+                    imPath.sendText(lblImageLocation.Text);
 
                     PathHelp mainDir = new PathHelp();
 
@@ -111,15 +110,6 @@ namespace Mark_Attendance_UI
                     var process = Process.Start(processStartInfo);
                     process.StandardError.ReadToEnd();
                     process.StandardOutput.ReadToEnd();
-                    //if (errors != "")
-                    //{
-                    //    MessageBox.Show(errors, "Errors");
-                    //}
-                    //if (results != "")
-                    //{
-                    //    MessageBox.Show(results, "Results");
-                    //}
-                    imPath.clearBridgeTxt();
                 }
                 else
                 {
@@ -163,22 +153,44 @@ namespace Mark_Attendance_UI
         {
             try
             {
-                FileInfo fi = new FileInfo(lblImageLocation.Text);
-                string ext = fi.Extension;
-                if (textBoxRename.Text == string.Empty)
+                PathHelp mp = new PathHelp();
+                string path = mp.getMainPath() + "bridge.txt";
+                string bridgeValue = System.IO.File.ReadAllText(path);
+
+                if (bridgeValue == "true" || bridgeValue == "false")
                 {
-                    File.Copy(lblImageLocation.Text, Path.Combine(dest, Path.GetFileName(lblImageLocation.Text)), true);
+                    bool isFaceDetected = Convert.ToBoolean(bridgeValue);
+                    if (isFaceDetected)
+                    {
+                        FileInfo fi = new FileInfo(lblImageLocation.Text);
+                        string ext = fi.Extension;
+                        if (textBoxRename.Text == string.Empty)
+                        {
+                            File.Copy(lblImageLocation.Text, Path.Combine(dest, Path.GetFileName(lblImageLocation.Text)), true);
+                        }
+                        else
+                        {
+                            File.Copy(lblImageLocation.Text, (dest + "\\" + textBoxRename.Text + ext), true);
+                        }
+
+
+                        DialogResult msgBxImSave = MessageBox.Show("Image saved!", "Done", MessageBoxButtons.OK);
+                        if (msgBxImSave == DialogResult.OK)
+                        {
+                            this.Close();
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Please Select an Image With a Clear Face!", "No Face Detected");
+                        mp.sendText(string.Empty);
+                    }
                 }
                 else
                 {
-                    File.Copy(lblImageLocation.Text, (dest + "\\" + textBoxRename.Text + ext), true);
+                    MessageBox.Show("Please check your image for faces\nClick on \"Check This Image for Faces\"", "Warning");
                 }
-                
-                DialogResult msgBxImSave = MessageBox.Show("Image saved!", "Done", MessageBoxButtons.OK);
-                if (msgBxImSave == DialogResult.OK)
-                {
-                    this.Close();
-                }
+
             }
 
             catch (Exception ex)
@@ -192,6 +204,12 @@ namespace Mark_Attendance_UI
                     MessageBox.Show(ex.Message, "Error");
                 }
             }
+        }
+
+        private void Add_Image_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            PathHelp ph = new PathHelp();
+            ph.sendText(string.Empty);
         }
     }
 }
